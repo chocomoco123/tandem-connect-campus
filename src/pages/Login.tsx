@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +12,22 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'student' | 'teacher' | 'committee'>('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Extract role from URL parameters if available
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'student' || roleParam === 'teacher' || roleParam === 'committee') {
+      setRole(roleParam);
+    }
+  }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +59,8 @@ const Login = () => {
         <div className="text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Welcome back</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Log in to your TANDEM account
+            Log in to your TANDEM account as a{' '}
+            <span className="font-medium text-primary capitalize">{role}</span>
           </p>
         </div>
         
@@ -98,7 +109,6 @@ const Login = () => {
             <div>
               <Label>I am a</Label>
               <RadioGroup
-                defaultValue="student"
                 value={role}
                 onValueChange={(value) => setRole(value as 'student' | 'teacher' | 'committee')}
                 className="flex space-x-4 mt-1"
@@ -137,7 +147,7 @@ const Login = () => {
           <div className="text-center text-sm">
             <p>
               Don't have an account?{' '}
-              <Link to="/signup" className="text-primary hover:underline">
+              <Link to={`/signup?role=${role}`} className="text-primary hover:underline">
                 Sign up
               </Link>
             </p>

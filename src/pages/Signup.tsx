@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Signup = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signup } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,6 +21,15 @@ const Signup = () => {
   const [role, setRole] = useState<'student' | 'teacher' | 'committee'>('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Extract role from URL parameters if available
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'student' || roleParam === 'teacher' || roleParam === 'committee') {
+      setRole(roleParam);
+    }
+  }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +73,7 @@ const Signup = () => {
         <div className="text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Create your account</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Join TANDEM and get access to CSI events and resources
+            Join TANDEM as a <span className="font-medium text-primary capitalize">{role}</span> and get access to CSI events and resources
           </p>
         </div>
         
@@ -135,7 +145,6 @@ const Signup = () => {
             <div>
               <Label>I am a</Label>
               <RadioGroup
-                defaultValue="student"
                 value={role}
                 onValueChange={(value) => setRole(value as 'student' | 'teacher' | 'committee')}
                 className="flex flex-wrap gap-4 mt-1"
@@ -174,7 +183,7 @@ const Signup = () => {
           <div className="text-center text-sm">
             <p>
               Already have an account?{' '}
-              <Link to="/login" className="text-primary hover:underline">
+              <Link to={`/login?role=${role}`} className="text-primary hover:underline">
                 Log in
               </Link>
             </p>
