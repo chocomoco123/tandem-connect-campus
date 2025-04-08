@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/components/ui/use-toast';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Mail, Lock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Login = () => {
@@ -55,12 +55,14 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 animate-fade-in">
+      <div className="max-w-md w-full space-y-8 bg-white rounded-xl shadow-sm border border-gray-100 p-8 animate-fade-in">
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900">Welcome back</h1>
+          <div className="inline-block px-3 py-1 text-sm font-medium text-primary bg-blue-50 rounded-full mb-3">
+            Student Access
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Log in to your TANDEM account as a{' '}
-            <span className="font-medium text-primary capitalize">{role}</span>
+            Sign in to access your CSI Registration dashboard
           </p>
         </div>
         
@@ -72,15 +74,18 @@ const Login = () => {
         )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="rounded-md space-y-4">
             <div>
-              <Label htmlFor="email">Email address</Label>
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" /> Email address
+              </Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
+                placeholder="your.email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1"
@@ -89,8 +94,10 @@ const Login = () => {
             
             <div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                <Label htmlFor="password" className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" /> Password
+                </Label>
+                <Link to="/forgot-password" className="text-xs text-[#2563EB] hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -100,6 +107,7 @@ const Login = () => {
                 type="password"
                 autoComplete="current-password"
                 required
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-1"
@@ -114,15 +122,15 @@ const Login = () => {
                 className="flex space-x-4 mt-1"
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="student" id="student" />
+                  <RadioGroupItem value="student" id="student" className="text-[#2563EB]"/>
                   <Label htmlFor="student">Student</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="teacher" id="teacher" />
+                  <RadioGroupItem value="teacher" id="teacher" className="text-[#2563EB]" />
                   <Label htmlFor="teacher">Teacher</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="committee" id="committee" />
+                  <RadioGroupItem value="committee" id="committee" className="text-[#2563EB]" />
                   <Label htmlFor="committee">Committee Member</Label>
                 </div>
               </RadioGroup>
@@ -131,23 +139,23 @@ const Login = () => {
           
           <Button 
             type="submit" 
-            className="w-full" 
+            className="w-full bg-[#2563EB] hover:bg-blue-700" 
             disabled={loading}
           >
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging in...
+                Signing in...
               </>
             ) : (
-              'Log in'
+              'Sign In'
             )}
           </Button>
           
           <div className="text-center text-sm">
             <p>
               Don't have an account?{' '}
-              <Link to={`/signup?role=${role}`} className="text-primary hover:underline">
+              <Link to={`/signup?role=${role}`} className="text-[#2563EB] hover:underline">
                 Sign up
               </Link>
             </p>

@@ -106,7 +106,7 @@ const Navbar = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/settings/appearance" className="w-full flex cursor-pointer">
-                      <PaperClip className="mr-2 h-4 w-4" />
+                      <Paperclip className="mr-2 h-4 w-4" />
                       <span>Appearance</span>
                     </Link>
                   </DropdownMenuItem>

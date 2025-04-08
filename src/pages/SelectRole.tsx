@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, BookOpen, Award, Settings } from 'lucide-react';
+import { User, BookOpen, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,21 +48,23 @@ const SelectRole = () => {
             >
               <Card className="h-full flex flex-col bg-white border-2 hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl">
                 <CardHeader className="text-center pb-2">
-                  <div className="mx-auto">{role.icon}</div>
-                  <CardTitle className="text-xl font-bold">{role.title}</CardTitle>
+                  <div className="mx-auto bg-blue-50 rounded-full w-20 h-20 flex items-center justify-center">
+                    {role.icon}
+                  </div>
+                  <CardTitle className="text-xl font-bold mt-3">{role.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <CardDescription className="text-center text-base">{role.description}</CardDescription>
                 </CardContent>
                 <CardFooter className="pt-0">
-                  <Button className="w-full">Select</Button>
+                  <Button className="w-full bg-[#2563EB] hover:bg-blue-700">Select</Button>
                 </CardFooter>
               </Card>
             </Link>
           ))}
         </div>
 
-        <div className="mt-16">
+        <div className="mt-16 text-center">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">About CSI</Button>
@@ -103,11 +105,11 @@ const SelectRole = () => {
             {/* CSI Logo and Description */}
             <div>
               <div className="flex items-center mb-4">
-                <span className="text-xl font-bold text-primary mr-2">CSI</span>
+                <span className="text-xl font-bold text-[#2563EB] mr-2">CSI</span>
                 <span className="text-sm text-gray-600">Computer Society of India</span>
               </div>
               <p className="text-sm text-gray-500">
-                The premier organization for IT professionals in India, promoting professional competence and knowledge sharing.
+                Computer Society of India - Student Branch. Connecting students through technology and innovation.
               </p>
             </div>
 
@@ -115,10 +117,10 @@ const SelectRole = () => {
             <div>
               <h3 className="font-semibold mb-3">Quick Links</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/" className="text-gray-600 hover:text-primary">Home</Link></li>
-                <li><Link to="/about" className="text-gray-600 hover:text-primary">About</Link></li>
-                <li><Link to="/events" className="text-gray-600 hover:text-primary">Events</Link></li>
-                <li><Link to="/contact" className="text-gray-600 hover:text-primary">Contact</Link></li>
+                <li><Link to="/" className="text-gray-600 hover:text-[#2563EB]">Home</Link></li>
+                <li><Link to="/about" className="text-gray-600 hover:text-[#2563EB]">About</Link></li>
+                <li><Link to="/events" className="text-gray-600 hover:text-[#2563EB]">Events</Link></li>
+                <li><Link to="/contact" className="text-gray-600 hover:text-[#2563EB]">Contact</Link></li>
               </ul>
             </div>
 
@@ -126,9 +128,9 @@ const SelectRole = () => {
             <div>
               <h3 className="font-semibold mb-3">Member Access</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/login" className="text-gray-600 hover:text-primary">Sign In</Link></li>
-                <li><Link to="/signup" className="text-gray-600 hover:text-primary">Register</Link></li>
-                <li><Link to="/dashboard" className="text-gray-600 hover:text-primary">Dashboard</Link></li>
+                <li><Link to="/login" className="text-gray-600 hover:text-[#2563EB]">Sign In</Link></li>
+                <li><Link to="/signup" className="text-gray-600 hover:text-[#2563EB]">Register</Link></li>
+                <li><Link to="/dashboard" className="text-gray-600 hover:text-[#2563EB]">Dashboard</Link></li>
               </ul>
             </div>
 
@@ -136,15 +138,16 @@ const SelectRole = () => {
             <div>
               <h3 className="font-semibold mb-3">Contact Info</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>Email: info@csichapter.edu</li>
-                <li>Phone: +91 98765 43210</li>
-                <li>Address: CSI Student Branch, Engineering College</li>
+                <li>College Campus, College Road</li>
+                <li>City, State - Pincode</li>
+                <li>Email: contact@csiconnect.edu</li>
+                <li>Phone: +91 123 456 7890</li>
               </ul>
             </div>
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} TANDEM - CSI Student Chapter. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Computer Society of India. All rights reserved.</p>
           </div>
         </div>
       </footer>
