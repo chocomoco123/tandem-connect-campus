@@ -58,7 +58,7 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8 bg-white rounded-xl shadow-sm border border-gray-100 p-8 animate-fade-in">
         <div className="text-center">
           <div className="inline-block px-3 py-1 text-sm font-medium text-primary bg-blue-50 rounded-full mb-3">
-            Student Access
+            {role.charAt(0).toUpperCase() + role.slice(1)} Access
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
           <p className="mt-2 text-sm text-gray-600">
@@ -115,7 +115,7 @@ const Login = () => {
             </div>
             
             <div>
-              <Label>I am a</Label>
+              <Label>Select Account Type</Label>
               <RadioGroup
                 value={role}
                 onValueChange={(value) => setRole(value as 'student' | 'teacher' | 'committee')}

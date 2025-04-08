@@ -69,11 +69,14 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 animate-fade-in">
+      <div className="max-w-md w-full space-y-8 bg-white rounded-xl shadow-sm border border-gray-100 p-8 animate-fade-in">
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900">Create your account</h1>
+          <div className="inline-block px-3 py-1 text-sm font-medium text-primary bg-blue-50 rounded-full mb-3">
+            {role.charAt(0).toUpperCase() + role.slice(1)} Registration
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Create your account</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Join TANDEM as a <span className="font-medium text-primary capitalize">{role}</span> and get access to CSI events and resources
+            Join CSI and get access to events and resources
           </p>
         </div>
         
@@ -85,7 +88,7 @@ const Signup = () => {
         )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="rounded-md space-y-4">
             <div>
               <Label htmlFor="name">Full Name</Label>
               <Input
@@ -143,7 +146,7 @@ const Signup = () => {
             </div>
             
             <div>
-              <Label>I am a</Label>
+              <Label>Select Account Type</Label>
               <RadioGroup
                 value={role}
                 onValueChange={(value) => setRole(value as 'student' | 'teacher' | 'committee')}

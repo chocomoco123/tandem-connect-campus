@@ -13,7 +13,8 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import AboutDialog from './AboutDialog';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -53,31 +54,7 @@ const Navbar = () => {
                   About
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>About The Computer Society of India</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 text-base">
-                  <p>
-                    The Computer Society of India (CSI) is the first and largest body of computer professionals in India. 
-                    Formed in 1965, CSI has been instrumental in guiding the Indian IT industry down the right path since its formative years.
-                  </p>
-                  <p>
-                    Our college's CSI Student Branch provides a platform for students to enhance their technical knowledge, 
-                    develop professional skills, and network with industry experts through various activities like workshops, 
-                    seminars, technical competitions, and industry visits.
-                  </p>
-                  <p>
-                    Being a member of CSI gives you access to exclusive technical resources, certification programs, 
-                    and opportunities to participate in national-level competitions and conferences. 
-                    It also enhances your resume by showcasing your involvement in professional computing societies.
-                  </p>
-                  <p>
-                    Join TANDEM CSI to stay updated with the latest in technology, develop leadership skills, 
-                    and become part of a nationwide network of IT professionals and enthusiasts!
-                  </p>
-                </div>
-              </DialogContent>
+              <AboutDialog />
             </Dialog>
             <Link to="/events" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
               Events
@@ -204,22 +181,7 @@ const Navbar = () => {
                   About
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>About The Computer Society of India</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 text-base">
-                  <p>
-                    The Computer Society of India (CSI) is the first and largest body of computer professionals in India. 
-                    Formed in 1965, CSI has been instrumental in guiding the Indian IT industry down the right path since its formative years.
-                  </p>
-                  <p>
-                    Our college's CSI Student Branch provides a platform for students to enhance their technical knowledge, 
-                    develop professional skills, and network with industry experts through various activities like workshops, 
-                    seminars, technical competitions, and industry visits.
-                  </p>
-                </div>
-              </DialogContent>
+              <AboutDialog />
             </Dialog>
             <Link 
               to="/events" 
