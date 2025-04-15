@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
+import {
   User, 
   Mail, 
   Phone, 
@@ -15,7 +14,7 @@ import {
   Briefcase, 
   BookOpen, 
   Link as LinkIcon,
-  GitHub, 
+  Github, 
   Linkedin, 
   Twitter,
   Instagram,
@@ -70,8 +69,6 @@ const ProfileSettings = () => {
     e.preventDefault();
     
     try {
-      // This is a mock of updating the user profile
-      // In a real app, this would update the user in the database
       const updatedUser = {
         ...user,
         name: formData.name,
@@ -91,8 +88,6 @@ const ProfileSettings = () => {
         }
       };
       
-      // In a real app, you'd call an API here
-      // For now, we'll just simulate it with the context function
       updateUser(updatedUser);
       
       toast({
@@ -115,7 +110,6 @@ const ProfileSettings = () => {
       <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Profile Preview Card */}
         <Card className="lg:col-span-1 card-shadow border-0 rounded-2xl">
           <CardHeader>
             <CardTitle className="text-xl">Profile Preview</CardTitle>
@@ -185,12 +179,11 @@ const ProfileSettings = () => {
             
             <Separator className="my-4" />
             
-            {/* Social Links */}
             <div className="flex justify-center space-x-4 pt-2">
               {formData.github && (
                 <a href={formData.github} target="_blank" rel="noopener noreferrer" 
                    className="text-gray-500 hover:text-primary transition-colors">
-                  <GitHub className="h-5 w-5" />
+                  <Github className="h-5 w-5" />
                 </a>
               )}
               {formData.linkedin && (
@@ -215,7 +208,6 @@ const ProfileSettings = () => {
           </CardContent>
         </Card>
         
-        {/* Edit Profile Form */}
         <Card className="lg:col-span-2 card-shadow border-0 rounded-2xl">
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -395,7 +387,7 @@ const ProfileSettings = () => {
                     <label htmlFor="github" className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
                     <div className="flex">
                       <div className="bg-muted p-2 rounded-l-md flex items-center">
-                        <GitHub className="h-5 w-5 text-gray-500" />
+                        <Github className="h-5 w-5 text-gray-500" />
                       </div>
                       <Input
                         id="github"
@@ -499,7 +491,6 @@ const ProfileSettings = () => {
         </Card>
       </div>
       
-      {/* Avatar Selection Dialog */}
       <dialog id="avatar-selector" className="modal rounded-xl backdrop:bg-black/50 p-0">
         <div className="modal-box bg-white p-6 rounded-xl max-w-2xl w-full">
           <h3 className="font-bold text-lg mb-4">Choose an Avatar</h3>
@@ -523,7 +514,12 @@ const ProfileSettings = () => {
           </div>
           <div className="flex justify-end mt-6">
             <Button 
-              onClick={() => document.getElementById('avatar-selector').close()}
+              onClick={() => {
+                const dialog = document.getElementById('avatar-selector');
+                if (dialog instanceof HTMLDialogElement) {
+                  dialog.close();
+                }
+              }}
             >
               Confirm Selection
             </Button>

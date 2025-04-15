@@ -1,198 +1,179 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/components/ui/use-toast';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 
 const Signup = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { signup } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'student' | 'teacher' | 'committee'>('student');
+  const [userType, setUserType] = useState('student');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  // Extract role from URL parameters if available
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const roleParam = searchParams.get('role');
-    if (roleParam === 'student' || roleParam === 'teacher' || roleParam === 'committee') {
-      setRole(roleParam);
-    }
-  }, [location]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const handleSignup = async (e) => {
     e.preventDefault();
-    setError('');
     
-    // Validation
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
+    if (!name || !email || !password || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
       return;
     }
     
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
       return;
     }
     
     setLoading(true);
     
     try {
-      await signup(email, password, role, name);
+      // Fixed the userType parameter by casting it to the correct type
+      await signup(email, password, userType as "student" | "teacher" | "committee");
       toast({
-        title: "Account created successfully!",
-        description: "Welcome to TANDEM.",
+        title: "Account created",
+        description: "Your account has been created successfully",
       });
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Failed to create an account. Please try again.');
+      navigate('/select-role');
+    } catch (error) {
       toast({
+        title: "Error",
+        description: error.message || "Failed to create account",
         variant: "destructive",
-        title: "Sign up failed",
-        description: "There was a problem creating your account.",
       });
     } finally {
       setLoading(false);
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white rounded-xl shadow-sm border border-gray-100 p-8 animate-fade-in">
-        <div className="text-center">
-          <div className="inline-block px-3 py-1 text-sm font-medium text-primary bg-blue-50 rounded-full mb-3">
-            {role.charAt(0).toUpperCase() + role.slice(1)} Registration
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Create your account</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Join CSI and get access to events and resources
-          </p>
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md border-0 shadow-lg rounded-2xl overflow-hidden">
+        <CardHeader className="space-y-1 text-center bg-primary text-white p-6 rounded-t-xl">
+          <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
+          <CardDescription className="text-primary-foreground">Sign up to join the CSI community</CardDescription>
+        </CardHeader>
         
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <Tabs defaultValue="student" className="w-full" onValueChange={setUserType}>
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="student">Student</TabsTrigger>
+            <TabsTrigger value="teacher">Teacher</TabsTrigger>
+            <TabsTrigger value="committee">Committee</TabsTrigger>
+          </TabsList>
+        </Tabs>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md space-y-4">
-            <div>
+        <CardContent className="p-6">
+          <form onSubmit={handleSignup} className="space-y-4">
+            <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input
+              <Input 
                 id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
+                placeholder="Your name" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1"
+                required
               />
             </div>
             
-            <div>
-              <Label htmlFor="email">Email address</Label>
-              <Input
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
                 id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
+                type="email" 
+                placeholder="your.email@example.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
+                required
               />
             </div>
             
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button 
+                  type="button" 
+                  onClick={togglePasswordVisibility} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                </button>
+              </div>
             </div>
             
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"} 
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button 
+                  type="button" 
+                  onClick={toggleConfirmPasswordVisibility} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showConfirmPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                </button>
+              </div>
             </div>
             
-            <div>
-              <Label>Select Account Type</Label>
-              <RadioGroup
-                value={role}
-                onValueChange={(value) => setRole(value as 'student' | 'teacher' | 'committee')}
-                className="flex flex-wrap gap-4 mt-1"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="student" id="student" />
-                  <Label htmlFor="student">Student</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="teacher" id="teacher" />
-                  <Label htmlFor="teacher">Teacher</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="committee" id="committee" />
-                  <Label htmlFor="committee">Committee Member</Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
-              </>
-            ) : (
-              'Sign up'
-            )}
-          </Button>
-          
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Creating account..." : "Sign Up"}
+            </Button>
+          </form>
+        </CardContent>
+        
+        <CardFooter className="flex flex-col space-y-4 border-t p-6 bg-muted/30">
           <div className="text-center text-sm">
-            <p>
-              Already have an account?{' '}
-              <Link to={`/login?role=${role}`} className="text-primary hover:underline">
-                Log in
-              </Link>
-            </p>
+            Already have an account?{" "}
+            <Link to="/login" className="text-primary font-medium hover:underline">
+              Sign in
+            </Link>
           </div>
-        </form>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

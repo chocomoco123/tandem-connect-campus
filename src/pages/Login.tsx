@@ -1,167 +1,133 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/components/ui/use-toast';
-import { AlertCircle, Loader2, Mail, Lock } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'student' | 'teacher' | 'committee'>('student');
+  const [userType, setUserType] = useState('student');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  // Extract role from URL parameters if available
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const roleParam = searchParams.get('role');
-    if (roleParam === 'student' || roleParam === 'teacher' || roleParam === 'committee') {
-      setRole(roleParam);
-    }
-  }, [location]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await login(email, password, role);
+    
+    if (!email || !password) {
       toast({
-        title: "Login successful!",
-        description: "Welcome back to TANDEM.",
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Fixed by removing the third parameter
+      await login(email, password);
+      toast({
+        title: "Success",
+        description: "You have successfully logged in",
       });
       navigate('/dashboard');
-    } catch (err) {
-      setError('Failed to login. Please check your credentials.');
+    } catch (error) {
       toast({
+        title: "Error",
+        description: error.message || "Failed to log in",
         variant: "destructive",
-        title: "Login failed",
-        description: "Please check your credentials and try again.",
       });
     } finally {
       setLoading(false);
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white rounded-xl shadow-sm border border-gray-100 p-8 animate-fade-in">
-        <div className="text-center">
-          <div className="inline-block px-3 py-1 text-sm font-medium text-primary bg-blue-50 rounded-full mb-3">
-            {role.charAt(0).toUpperCase() + role.slice(1)} Access
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to access your CSI Registration dashboard
-          </p>
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md border-0 shadow-lg rounded-2xl overflow-hidden">
+        <CardHeader className="space-y-1 text-center bg-primary text-white p-6 rounded-t-xl">
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardDescription className="text-primary-foreground">Sign in to your CSI account</CardDescription>
+        </CardHeader>
         
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <Tabs defaultValue="student" className="w-full" onValueChange={setUserType}>
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="student">Student</TabsTrigger>
+            <TabsTrigger value="teacher">Teacher</TabsTrigger>
+            <TabsTrigger value="committee">Committee</TabsTrigger>
+          </TabsList>
+        </Tabs>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md space-y-4">
-            <div>
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" /> Email address
-              </Label>
-              <Input
+        <CardContent className="p-6">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
                 id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="your.email@example.com"
+                type="email" 
+                placeholder="your.email@example.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
+                required
               />
             </div>
-            
-            <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="flex items-center gap-2">
-                  <Lock className="h-4 w-4" /> Password
-                </Label>
-                <Link to="/forgot-password" className="text-xs text-[#2563EB] hover:underline">
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button 
+                  type="button" 
+                  onClick={togglePasswordVisibility} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                </button>
+              </div>
+              <div className="text-right text-sm">
+                <Link to="/forgot-password" className="text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1"
-              />
             </div>
-            
-            <div>
-              <Label>Select Account Type</Label>
-              <RadioGroup
-                value={role}
-                onValueChange={(value) => setRole(value as 'student' | 'teacher' | 'committee')}
-                className="flex space-x-4 mt-1"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="student" id="student" className="text-[#2563EB]"/>
-                  <Label htmlFor="student">Student</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="teacher" id="teacher" className="text-[#2563EB]" />
-                  <Label htmlFor="teacher">Teacher</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="committee" id="committee" className="text-[#2563EB]" />
-                  <Label htmlFor="committee">Committee Member</Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-[#2563EB] hover:bg-blue-700" 
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              'Sign In'
-            )}
-          </Button>
-          
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+        </CardContent>
+        
+        <CardFooter className="flex flex-col space-y-4 border-t p-6 bg-muted/30">
           <div className="text-center text-sm">
-            <p>
-              Don't have an account?{' '}
-              <Link to={`/signup?role=${role}`} className="text-[#2563EB] hover:underline">
-                Sign up
-              </Link>
-            </p>
+            Don't have an account yet?{" "}
+            <Link to="/signup" className="text-primary font-medium hover:underline">
+              Create an account
+            </Link>
           </div>
-        </form>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

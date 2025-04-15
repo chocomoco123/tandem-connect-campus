@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import NotificationsPopover from './NotificationsPopover';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,6 +43,11 @@ const Navbar = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  // Add active state for navigation links
+  const isActive = (path) => {
+    return location.pathname === path ? "bg-primary/10 text-primary font-medium" : "";
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,21 +61,33 @@ const Navbar = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+            <Link 
+              to="/" 
+              className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isActive('/')}`}
+            >
               Home
             </Link>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="ghost" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                <Button 
+                  variant="ghost" 
+                  className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 ${isActive('/about')}`}
+                >
                   About
                 </Button>
               </DialogTrigger>
               <AboutDialog />
             </Dialog>
-            <Link to="/events" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+            <Link 
+              to="/events" 
+              className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isActive('/events')}`}
+            >
               Events
             </Link>
-            <Link to="/contact" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+            <Link 
+              to="/contact" 
+              className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isActive('/contact')}`}
+            >
               Contact
             </Link>
             

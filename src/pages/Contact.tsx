@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Phone, MapPin, Linkedin, GitHub, Instagram } from 'lucide-react';
+import { Mail, Phone, MapPin, Github, Linkedin, Instagram } from 'lucide-react';
 
 const ContactPage = () => {
   const committeeMembers = [
@@ -89,7 +88,7 @@ const ContactPage = () => {
                   <Instagram className="h-6 w-6" />
                 </a>
                 <a href="https://github.com/fcrit-csit" className="text-gray-500 hover:text-primary smooth-transition">
-                  <GitHub className="h-6 w-6" />
+                  <Github className="h-6 w-6" />
                 </a>
               </div>
             </CardContent>
