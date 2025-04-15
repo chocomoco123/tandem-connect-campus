@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User, LogOut, Settings, Bell, Paperclip } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, Bell, Paperclip, Moon, Sun, Laptop } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   DropdownMenu, 
@@ -11,18 +13,26 @@ import {
   DropdownMenuItem, 
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import AboutDialog from './AboutDialog';
+import NotificationsPopover from './NotificationsPopover';
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const handleLogout = async () => {
     try {
       await logout();
+      navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -33,35 +43,67 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-bold text-primary mr-2">CSI</span>
-              <span className="text-sm font-medium hidden sm:inline-block">Computer Society of India</span>
+              <span className="text-sm font-medium hidden sm:inline-block dark:text-gray-200">Computer Society of India</span>
             </Link>
           </div>
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
               Home
             </Link>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="ghost" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                <Button variant="ghost" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
                   About
                 </Button>
               </DialogTrigger>
               <AboutDialog />
             </Dialog>
-            <Link to="/events" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            <Link to="/events" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
               Events
             </Link>
-            <Link to="/contact" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            <Link to="/contact" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
               Contact
             </Link>
+            
+            {/* Theme Switcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  {theme === 'dark' ? (
+                    <Moon className="h-5 w-5" />
+                  ) : theme === 'light' ? (
+                    <Sun className="h-5 w-5" />
+                  ) : (
+                    <Laptop className="h-5 w-5" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme('light')}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  <span>Light</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme('dark')}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  <span>Dark</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme('system')}>
+                  <Laptop className="mr-2 h-4 w-4" />
+                  <span>System</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* Notifications */}
+            <NotificationsPopover />
             
             {/* Settings Button */}
             <DropdownMenu>
@@ -84,12 +126,6 @@ const Navbar = () => {
                     <Link to="/settings/appearance" className="w-full flex cursor-pointer">
                       <Paperclip className="mr-2 h-4 w-4" />
                       <span>Appearance</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings/notifications" className="w-full flex cursor-pointer">
-                      <Bell className="mr-2 h-4 w-4" />
-                      <span>Notifications</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -166,18 +202,18 @@ const Navbar = () => {
       
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 animate-fade-in">
+        <div className="md:hidden bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800 animate-fade-in">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link 
               to="/" 
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </Link>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="ghost" className="w-full text-left justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                <Button variant="ghost" className="w-full text-left justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
                   About
                 </Button>
               </DialogTrigger>
@@ -185,14 +221,14 @@ const Navbar = () => {
             </Dialog>
             <Link 
               to="/events" 
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
               onClick={() => setMobileMenuOpen(false)}
             >
               Events
             </Link>
             <Link 
               to="/contact" 
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
@@ -200,17 +236,55 @@ const Navbar = () => {
             
             <Link 
               to="/settings/profile" 
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Settings
+              Profile Settings
             </Link>
+
+            <Link 
+              to="/settings/appearance" 
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Appearance
+            </Link>
+            
+            <div className="flex items-center px-3 py-2">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-3">Theme:</p>
+              <div className="flex space-x-2">
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-8 w-8" 
+                  onClick={() => setTheme('light')}
+                >
+                  <Sun className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-8 w-8" 
+                  onClick={() => setTheme('dark')}
+                >
+                  <Moon className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-8 w-8" 
+                  onClick={() => setTheme('system')}
+                >
+                  <Laptop className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
             
             {user ? (
               <>
                 <Link 
                   to="/dashboard" 
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Dashboard
@@ -220,7 +294,7 @@ const Navbar = () => {
                     handleLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Log out
                 </button>

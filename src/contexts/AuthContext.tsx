@@ -1,110 +1,147 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type UserRole = 'student' | 'teacher' | 'committee' | null;
+interface SocialLinks {
+  github?: string;
+  linkedin?: string;
+  twitter?: string;
+  instagram?: string;
+}
 
-interface User {
+export interface User {
   id: string;
+  name: string;
   email: string;
-  role: UserRole;
-  name?: string;
+  role: 'student' | 'teacher' | 'committee';
   profileUrl?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
+  occupation?: string;
+  education?: string;
+  website?: string;
+  socialLinks?: SocialLinks;
 }
 
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
-  login: (email: string, password: string, role: UserRole) => Promise<void>;
-  signup: (email: string, password: string, role: UserRole, name: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  signup: (name: string, email: string, password: string, role: 'student' | 'teacher' | 'committee') => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+  updateUser: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
-export function AuthProvider({ children }: AuthProviderProps) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // This is a mock implementation. When integrated with Supabase,
-  // we'll replace this with actual Supabase auth calls.
   useEffect(() => {
-    // Check if user is already logged in
-    const savedUser = localStorage.getItem('tandem_user');
+    // Check for saved user in localStorage
+    const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
-    setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole) => {
-    setLoading(true);
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      // Mock login - replace with Supabase auth
-      const mockUser: User = {
-        id: 'mock-id-' + Math.random().toString(36).substr(2, 9),
-        email,
-        role,
-        name: email.split('@')[0],
-      };
-      localStorage.setItem('tandem_user', JSON.stringify(mockUser));
-      setUser(mockUser);
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      // Mock login - in a real app, this would be an API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Simulate user found
+      if (email === 'demo@example.com' && password === 'password') {
+        const loggedInUser: User = {
+          id: '1',
+          name: 'Demo User',
+          email: 'demo@example.com',
+          role: 'student',
+          profileUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
+        };
+        
+        setUser(loggedInUser);
+        localStorage.setItem('user', JSON.stringify(loggedInUser));
+      } else {
+        throw new Error('Invalid credentials');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const signup = async (email: string, password: string, role: UserRole, name: string) => {
-    setLoading(true);
+  const signup = async (name: string, email: string, password: string, role: 'student' | 'teacher' | 'committee') => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      // Mock signup - replace with Supabase auth
-      const mockUser: User = {
-        id: 'mock-id-' + Math.random().toString(36).substr(2, 9),
+      // Mock signup - in a real app, this would be an API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create new user
+      const newUser: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        name,
         email,
         role,
-        name,
+        profileUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
       };
-      localStorage.setItem('tandem_user', JSON.stringify(mockUser));
-      setUser(mockUser);
-    } catch (error) {
-      console.error('Signup error:', error);
-      throw error;
+      
+      setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during signup');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
-    setLoading(true);
+    setIsLoading(true);
+    
     try {
-      // Mock logout - replace with Supabase auth
-      localStorage.removeItem('tandem_user');
+      // Mock logout
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       setUser(null);
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
+      localStorage.removeItem('user');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during logout');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
+  
+  const updateUser = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  const value = {
+    user,
+    login,
+    logout,
+    signup,
+    isLoading,
+    error,
+    updateUser
+  };
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
