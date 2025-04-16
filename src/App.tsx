@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
@@ -10,8 +11,9 @@ import ProfileSettings from './pages/ProfileSettings';
 import AppearanceSettings from './pages/AppearanceSettings';
 import Events from './pages/Events';
 import Contact from './pages/Contact';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import ProtectedRoute from './components/ProtectedRoute';
+import DashboardLayout from './components/DashboardLayout';
 // Import the new components
 import LoginRoutes from './pages/auth/LoginRoutes';
 import EventDetail from './pages/EventDetail';
