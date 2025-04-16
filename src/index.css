@@ -37,7 +37,7 @@
 
     --radius: 1rem;
 
-    --sidebar-background: 0 0% 100%;
+    --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
@@ -108,7 +108,7 @@
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-primary via-blue-500 to-indigo-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-tandem-blue via-tandem-indigo to-tandem-purple bg-clip-text text-transparent;
   }
   
   .hover-scale {
@@ -173,71 +173,4 @@ html {
 /* Dialog styling */
 .dialog-content {
   @apply rounded-2xl shadow-xl border border-gray-100 p-6;
-}
-
-/* Dashboard styling */
-.dashboard-header {
-  @apply bg-gradient-to-r from-primary to-blue-600 text-white p-6 rounded-xl mb-6 shadow-lg;
-}
-
-.dashboard-card {
-  @apply rounded-xl border-0 overflow-hidden shadow-md hover:shadow-lg transition-all duration-300;
-}
-
-.dashboard-icon-container {
-  @apply bg-primary/10 p-3 rounded-full flex items-center justify-center;
-}
-
-/* Table styling */
-.table-row {
-  @apply hover:bg-gray-50 transition-colors;
-}
-
-/* Badge styling */
-.badge-success {
-  @apply bg-green-100 text-green-800 hover:bg-green-200;
-}
-
-.badge-warning {
-  @apply bg-amber-100 text-amber-800 hover:bg-amber-200;
-}
-
-.badge-danger {
-  @apply bg-red-100 text-red-800 hover:bg-red-200;
-}
-
-/* Status indicators */
-.status-indicator {
-  @apply flex items-center gap-1.5;
-}
-
-.status-indicator::before {
-  content: "";
-  @apply block w-2 h-2 rounded-full;
-}
-
-.status-indicator.active::before {
-  @apply bg-green-500;
-}
-
-.status-indicator.pending::before {
-  @apply bg-amber-500;
-}
-
-.status-indicator.inactive::before {
-  @apply bg-red-500;
-}
-
-/* Make all shadcn components look more rounded and friendly */
-.rounded-shadcn {
-  @apply rounded-xl;
-}
-
-/* Fix Navbar item styling */
-.nav-item {
-  @apply px-3 py-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors;
-}
-
-.nav-item.active {
-  @apply bg-primary/10 text-primary font-medium;
 }

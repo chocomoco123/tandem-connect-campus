@@ -36,8 +36,8 @@ const Login = () => {
     setLoading(true);
     
     try {
-      // Pass email, password and userType
-      await login(email, password, userType);
+      // Fixed by removing the third parameter
+      await login(email, password);
       toast({
         title: "Success",
         description: "You have successfully logged in",

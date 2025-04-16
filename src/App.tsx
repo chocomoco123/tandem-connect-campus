@@ -30,45 +30,22 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <div className="flex flex-col min-h-screen">
-              <Routes>
-                {/* Dashboard routes don't include the main navbar */}
-                <Route path="/dashboard/*" element={<Dashboard />} />
-                <Route path="/dashboard/profile" element={<Dashboard />} />
-                <Route path="/dashboard/events" element={<Dashboard />} />
-                <Route path="/dashboard/notifications" element={<Dashboard />} />
-                <Route path="/dashboard/my-registrations" element={<Dashboard />} />
-                <Route path="/dashboard/calendar" element={<Dashboard />} />
-                <Route path="/dashboard/registrations" element={<Dashboard />} />
-                <Route path="/dashboard/attendance" element={<Dashboard />} />
-                <Route path="/dashboard/payments" element={<Dashboard />} />
-                <Route path="/dashboard/create-event" element={<Dashboard />} />
-                <Route path="/dashboard/committee" element={<Dashboard />} />
-                <Route path="/dashboard/attendance-history" element={<Dashboard />} />
-                <Route path="/dashboard/settings" element={<Dashboard />} />
-                
-                {/* Routes with the main navbar */}
-                <Route 
-                  path="*"
-                  element={
-                    <>
-                      <Navbar />
-                      <main className="flex-grow">
-                        <Routes>
-                          <Route path="/" element={<Index />} />
-                          <Route path="/login" element={<Login />} />
-                          <Route path="/signup" element={<Signup />} />
-                          <Route path="/select-role" element={<SelectRole />} />
-                          <Route path="/events" element={<Events />} />
-                          <Route path="/contact" element={<Contact />} />
-                          <Route path="/settings/profile" element={<ProfileSettings />} />
-                          <Route path="/settings/appearance" element={<AppearanceSettings />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </main>
-                    </>
-                  }
-                />
-              </Routes>
+              <Navbar />
+              <main className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/select-role" element={<SelectRole />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/settings/profile" element={<ProfileSettings />} />
+                  <Route path="/settings/appearance" element={<AppearanceSettings />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
             </div>
           </BrowserRouter>
         </TooltipProvider>
