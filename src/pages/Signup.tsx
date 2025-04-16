@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Info } from 'lucide-react';
 
 const Signup = () => {
   const { signup } = useAuth();
@@ -24,7 +25,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  const handleSignup = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!name || !email || !password || !confirmPassword) {
@@ -48,13 +49,15 @@ const Signup = () => {
     setLoading(true);
     
     try {
-      // Fixed the userType parameter by casting it to the correct type
-      await signup(email, password, userType as "student" | "teacher" | "committee");
+      // Pass all four parameters: email, password, name, userType
+      await signup(email, password, name, userType);
+      
       toast({
         title: "Account created",
         description: "Your account has been created successfully",
       });
-      navigate('/select-role');
+      
+      navigate('/dashboard');
     } catch (error) {
       toast({
         title: "Error",
@@ -65,21 +68,13 @@ const Signup = () => {
       setLoading(false);
     }
   };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
   
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md border-0 shadow-lg rounded-2xl overflow-hidden">
         <CardHeader className="space-y-1 text-center bg-primary text-white p-6 rounded-t-xl">
           <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
-          <CardDescription className="text-primary-foreground">Sign up to join the CSI community</CardDescription>
+          <CardDescription className="text-primary-foreground">Join CSI Connect today</CardDescription>
         </CardHeader>
         
         <Tabs defaultValue="student" className="w-full" onValueChange={setUserType}>
@@ -91,14 +86,14 @@ const Signup = () => {
         </Tabs>
         
         <CardContent className="p-6">
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input 
                 id="name"
-                placeholder="Your name" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
                 required
               />
             </div>
@@ -107,10 +102,10 @@ const Signup = () => {
               <Label htmlFor="email">Email</Label>
               <Input 
                 id="email"
-                type="email" 
-                placeholder="your.email@example.com" 
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="your.email@example.com"
                 required
               />
             </div>
@@ -118,18 +113,18 @@ const Signup = () => {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input
+                <Input 
                   id="password"
-                  type={showPassword ? "text" : "password"} 
-                  placeholder="Create a password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password"
                   required
                   className="pr-10"
                 />
                 <button 
                   type="button" 
-                  onClick={togglePasswordVisibility} 
+                  onClick={() => setShowPassword(!showPassword)} 
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
                 >
                   {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
@@ -140,18 +135,18 @@ const Signup = () => {
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
-                <Input
+                <Input 
                   id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"} 
-                  placeholder="Confirm your password"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
                   required
                   className="pr-10"
                 />
                 <button 
                   type="button" 
-                  onClick={toggleConfirmPasswordVisibility} 
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
                 >
                   {showConfirmPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
@@ -159,8 +154,19 @@ const Signup = () => {
               </div>
             </div>
             
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Sign Up"}
+            <div className="bg-blue-50 p-3 rounded-lg flex items-start space-x-2 text-sm text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+              <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <p>
+                Password must be at least 8 characters and include uppercase, lowercase, number and special character.
+              </p>
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
         </CardContent>
@@ -169,8 +175,12 @@ const Signup = () => {
           <div className="text-center text-sm">
             Already have an account?{" "}
             <Link to="/login" className="text-primary font-medium hover:underline">
-              Sign in
+              Sign in instead
             </Link>
+          </div>
+          
+          <div className="text-center text-xs text-muted-foreground">
+            By creating an account, you agree to our <Link to="/terms" className="underline">Terms of Service</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>.
           </div>
         </CardFooter>
       </Card>
