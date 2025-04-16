@@ -21,12 +21,6 @@ export interface User {
   education?: string;
   website?: string;
   socialLinks?: SocialLinks;
-  rollNumber?: string;
-  branch?: string;
-  year?: string;
-  institute?: string;
-  department?: string;
-  position?: string;
 }
 
 interface AuthContextType {
@@ -37,7 +31,6 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   updateUser: (userData: User) => void;
-  updateProfile: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -79,10 +72,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           email: 'demo@example.com',
           role: 'student',
           profileUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
-          rollNumber: 'CSI2023001',
-          branch: 'Computer Science',
-          year: '3rd Year',
-          institute: 'Fr. C. Rodrigues Institute of Technology, Vashi',
         };
         
         setUser(loggedInUser);
@@ -105,36 +94,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Mock signup - in a real app, this would be an API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Create new user with role-specific fields
-      let newUser: User = {
+      // Create new user
+      const newUser: User = {
         id: Math.random().toString(36).substr(2, 9),
         name,
         email,
         role,
         profileUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-        institute: 'Fr. C. Rodrigues Institute of Technology, Vashi',
       };
-      
-      // Add role-specific fields
-      if (role === 'student') {
-        newUser = {
-          ...newUser,
-          rollNumber: `CSI${new Date().getFullYear()}${Math.floor(Math.random() * 1000)}`,
-          branch: 'Computer Science',
-          year: '2nd Year',
-        };
-      } else if (role === 'teacher') {
-        newUser = {
-          ...newUser,
-          department: 'Computer Science Department',
-          position: 'Assistant Professor',
-        };
-      } else if (role === 'committee') {
-        newUser = {
-          ...newUser,
-          position: 'Committee Member',
-        };
-      }
       
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
@@ -165,14 +132,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };
-  
-  const updateProfile = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
-  };
 
   const value = {
     user,
@@ -181,8 +140,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signup,
     isLoading,
     error,
-    updateUser,
-    updateProfile
+    updateUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

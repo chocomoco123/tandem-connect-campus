@@ -1,318 +1,309 @@
 
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Camera, Pencil, Save, Github, Linkedin, Twitter } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/components/ui/use-toast';
+import { Save, Camera, Trash2, Link2, Twitter, Github, Linkedin, Instagram } from 'lucide-react';
 
 const ProfileSettings = () => {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    rollNumber: user?.rollNumber || '',
-    branch: user?.branch || '',
-    year: user?.year || '',
-    bio: user?.bio || '',
-    github: user?.github || '',
-    linkedin: user?.linkedin || '',
-    twitter: user?.twitter || '',
-  });
+  const [name, setName] = useState(user?.name || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [institute, setInstitute] = useState(user?.institute || '');
+  const [profileImage, setProfileImage] = useState<string | null>(user?.profileUrl || null);
+  const [loading, setLoading] = useState(false);
   
-  const [isLoading, setIsLoading] = useState(false);
+  // Social links
+  const [twitterLink, setTwitterLink] = useState(user?.socialLinks?.twitter || '');
+  const [githubLink, setGithubLink] = useState(user?.socialLinks?.github || '');
+  const [linkedinLink, setLinkedinLink] = useState(user?.socialLinks?.linkedin || '');
+  const [instagramLink, setInstagramLink] = useState(user?.socialLinks?.instagram || '');
   
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
-  const handleSelectChange = (name, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
-  const handleSubmit = async (e) => {
+  const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     
     try {
-      // In a real app, this would update the user profile in the database
-      // For now, we'll simulate a successful update
-      // await updateUserProfile(formData);
+      const updatedProfile = {
+        name,
+        bio,
+        phone,
+        institute,
+        profileUrl: profileImage,
+        socialLinks: {
+          twitter: twitterLink,
+          github: githubLink,
+          linkedin: linkedinLink,
+          instagram: instagramLink
+        }
+      };
+      
+      await updateProfile(updatedProfile);
       
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
       });
       
-      // Navigate back to dashboard after successful update
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+      // Navigate back to profile
+      navigate('/dashboard/profile');
     } catch (error) {
       toast({
-        title: "Failed to update profile",
-        description: "There was a problem updating your profile. Please try again.",
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
   
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="relative">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={user?.profileUrl} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+    <div className="container max-w-4xl py-12">
+      <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Profile Image Section */}
+        <Card className="border-0 shadow-sm col-span-1">
+          <CardHeader>
+            <CardTitle className="text-xl">Profile Picture</CardTitle>
+            <CardDescription>Your public profile image</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-4">
+            <Avatar className="w-32 h-32">
+              <AvatarImage src={profileImage || undefined} />
+              <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                {name ? name.charAt(0).toUpperCase() : 'U'}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm" onClick={triggerFileInput}>
+                <Camera className="mr-2 h-4 w-4" />
+                Upload
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setProfileImage(null)}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Remove
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+                accept="image/*"
+              />
+            </div>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              Recommended: Square JPG, PNG.<br />Max size: 1MB.
+            </p>
+          </CardContent>
+        </Card>
+        
+        {/* Profile Details */}
+        <Card className="border-0 shadow-sm col-span-1 md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-xl">Personal Information</CardTitle>
+            <CardDescription>Update your personal details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input 
+                  id="name"
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  placeholder="Your full name" 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea 
+                  id="bio"
+                  value={bio} 
+                  onChange={(e) => setBio(e.target.value)} 
+                  placeholder="Tell us about yourself"
+                  className="min-h-[100px]"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input 
+                  id="phone"
+                  value={phone} 
+                  onChange={(e) => setPhone(e.target.value)} 
+                  placeholder="Your phone number" 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="institute">Institute/Organization</Label>
+                <Input 
+                  id="institute"
+                  value={institute} 
+                  onChange={(e) => setInstitute(e.target.value)} 
+                  placeholder="Your institution or organization" 
+                />
+              </div>
+              
+              <Separator className="my-4" />
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-medium">Social Links</h3>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <Link2 className="mr-2 h-4 w-4" />
+                        Manage Links
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Manage Social Links</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Twitter className="h-4 w-4 mr-2 text-[#1DA1F2]" />
+                            <Label htmlFor="twitter">Twitter</Label>
+                          </div>
+                          <Input 
+                            id="twitter"
+                            value={twitterLink} 
+                            onChange={(e) => setTwitterLink(e.target.value)} 
+                            placeholder="https://twitter.com/username" 
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Github className="h-4 w-4 mr-2" />
+                            <Label htmlFor="github">GitHub</Label>
+                          </div>
+                          <Input 
+                            id="github"
+                            value={githubLink} 
+                            onChange={(e) => setGithubLink(e.target.value)} 
+                            placeholder="https://github.com/username" 
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Linkedin className="h-4 w-4 mr-2 text-[#0077B5]" />
+                            <Label htmlFor="linkedin">LinkedIn</Label>
+                          </div>
+                          <Input 
+                            id="linkedin"
+                            value={linkedinLink} 
+                            onChange={(e) => setLinkedinLink(e.target.value)} 
+                            placeholder="https://linkedin.com/in/username" 
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Instagram className="h-4 w-4 mr-2 text-[#E4405F]" />
+                            <Label htmlFor="instagram">Instagram</Label>
+                          </div>
+                          <Input 
+                            id="instagram"
+                            value={instagramLink} 
+                            onChange={(e) => setInstagramLink(e.target.value)} 
+                            placeholder="https://instagram.com/username" 
+                          />
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                
+                <div className="grid grid-cols-4 gap-2">
                   <Button 
                     variant="outline" 
                     size="icon" 
-                    className="absolute bottom-0 right-0 rounded-full bg-white hover:bg-gray-100"
+                    className={twitterLink ? "text-[#1DA1F2]" : "text-muted-foreground"}
+                    type="button"
+                    onClick={() => window.open(twitterLink, '_blank')}
+                    disabled={!twitterLink}
                   >
-                    <Camera className="h-4 w-4" />
+                    <Twitter className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className={githubLink ? "" : "text-muted-foreground"}
+                    type="button"
+                    onClick={() => window.open(githubLink, '_blank')}
+                    disabled={!githubLink}
+                  >
+                    <Github className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className={linkedinLink ? "text-[#0077B5]" : "text-muted-foreground"}
+                    type="button"
+                    onClick={() => window.open(linkedinLink, '_blank')}
+                    disabled={!linkedinLink}
+                  >
+                    <Linkedin className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className={instagramLink ? "text-[#E4405F]" : "text-muted-foreground"}
+                    type="button"
+                    onClick={() => window.open(instagramLink, '_blank')}
+                    disabled={!instagramLink}
+                  >
+                    <Instagram className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <CardTitle>{user?.name || 'User'}</CardTitle>
-              <CardDescription>{user?.email}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{user?.role || 'Student'}</span>
-                </div>
-                {user?.rollNumber && (
-                  <div className="text-sm">
-                    <span className="font-medium">Roll Number: </span>
-                    <span>{user.rollNumber}</span>
-                  </div>
-                )}
-                {user?.branch && (
-                  <div className="text-sm">
-                    <span className="font-medium">Branch: </span>
-                    <span>{user.branch}</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Edit Profile</CardTitle>
-              <CardDescription>Update your personal information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="profile">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="profile">Basic Info</TabsTrigger>
-                  <TabsTrigger value="social">Social Links</TabsTrigger>
-                  <TabsTrigger value="password">Change Password</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="profile">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input 
-                          id="name" 
-                          name="name" 
-                          value={formData.name} 
-                          onChange={handleChange} 
-                          placeholder="Enter your full name" 
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input 
-                          id="email" 
-                          name="email" 
-                          value={formData.email} 
-                          onChange={handleChange} 
-                          placeholder="Enter your email"
-                          disabled
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="rollNumber">Roll Number</Label>
-                        <Input 
-                          id="rollNumber" 
-                          name="rollNumber" 
-                          value={formData.rollNumber} 
-                          onChange={handleChange} 
-                          placeholder="Enter your roll number" 
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="branch">Branch</Label>
-                        <Select
-                          value={formData.branch}
-                          onValueChange={(value) => handleSelectChange('branch', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select branch" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Computer Science">Computer Science</SelectItem>
-                            <SelectItem value="Information Technology">Information Technology</SelectItem>
-                            <SelectItem value="Electronics">Electronics</SelectItem>
-                            <SelectItem value="Mechanical">Mechanical</SelectItem>
-                            <SelectItem value="Civil">Civil</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="year">Year</Label>
-                        <Select
-                          value={formData.year}
-                          onValueChange={(value) => handleSelectChange('year', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="First Year">First Year</SelectItem>
-                            <SelectItem value="Second Year">Second Year</SelectItem>
-                            <SelectItem value="Third Year">Third Year</SelectItem>
-                            <SelectItem value="Fourth Year">Fourth Year</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
-                      <textarea 
-                        id="bio" 
-                        name="bio" 
-                        value={formData.bio} 
-                        onChange={handleChange} 
-                        placeholder="Tell us a bit about yourself"
-                        className="w-full rounded-md border border-input p-2 min-h-[100px]"
-                      />
-                    </div>
-                    
-                    <div className="flex justify-end">
-                      <Button type="submit" disabled={isLoading}>
-                        {isLoading ? 'Saving...' : 'Save Changes'}
-                      </Button>
-                    </div>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="social">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="flex items-center" htmlFor="github">
-                        <Github className="h-4 w-4 mr-2" />
-                        GitHub
-                      </Label>
-                      <Input 
-                        id="github" 
-                        name="github" 
-                        value={formData.github} 
-                        onChange={handleChange} 
-                        placeholder="https://github.com/username" 
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="flex items-center" htmlFor="linkedin">
-                        <Linkedin className="h-4 w-4 mr-2" />
-                        LinkedIn
-                      </Label>
-                      <Input 
-                        id="linkedin" 
-                        name="linkedin" 
-                        value={formData.linkedin} 
-                        onChange={handleChange} 
-                        placeholder="https://linkedin.com/in/username" 
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="flex items-center" htmlFor="twitter">
-                        <Twitter className="h-4 w-4 mr-2" />
-                        Twitter
-                      </Label>
-                      <Input 
-                        id="twitter" 
-                        name="twitter" 
-                        value={formData.twitter} 
-                        onChange={handleChange} 
-                        placeholder="https://twitter.com/username" 
-                      />
-                    </div>
-                    
-                    <div className="flex justify-end">
-                      <Button type="submit" disabled={isLoading}>
-                        {isLoading ? 'Saving...' : 'Save Social Links'}
-                      </Button>
-                    </div>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="password">
-                  <form className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password">Current Password</Label>
-                      <Input id="current-password" type="password" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">New Password</Label>
-                      <Input id="new-password" type="password" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm New Password</Label>
-                      <Input id="confirm-password" type="password" />
-                    </div>
-                    
-                    <div className="flex justify-end">
-                      <Button type="submit">Change Password</Button>
-                    </div>
-                  </form>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
+              
+              <CardFooter className="px-0 pt-6">
+                <Button type="submit" disabled={loading} className="ml-auto">
+                  {loading ? "Saving..." : "Save Changes"}
+                  <Save className="ml-2 h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
