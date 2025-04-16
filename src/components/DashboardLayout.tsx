@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   Bell, 
@@ -14,7 +14,13 @@ import {
   Users,
   BookOpen,
   ClipboardList,
-  Award
+  Award,
+  X,
+  FileText,
+  CreditCard,
+  PlusCircle,
+  History,
+  Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -34,33 +40,34 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const getNavLinks = () => {
     const commonLinks = [
       { name: 'Dashboard', href: '/dashboard', icon: Home },
+      { name: 'Events', href: '/dashboard/events', icon: Calendar },
+      { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
       { name: 'Profile', href: '/dashboard/profile', icon: User },
-      { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
-      { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ];
     
     if (user?.role === 'student') {
       return [
         ...commonLinks,
-        { name: 'My Events', href: '/dashboard/my-events', icon: BookOpen },
+        { name: 'My Registrations', href: '/dashboard/my-registrations', icon: ClipboardList },
+        { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
       ];
     }
     
     if (user?.role === 'teacher') {
       return [
         ...commonLinks,
-        { name: 'Registrations', href: '/dashboard/registrations', icon: ClipboardList },
+        { name: 'Manage Registrations', href: '/dashboard/registrations', icon: ClipboardList },
         { name: 'Attendance', href: '/dashboard/attendance', icon: Users },
+        { name: 'Payments', href: '/dashboard/payments', icon: CreditCard },
       ];
     }
     
     if (user?.role === 'committee') {
       return [
         ...commonLinks,
-        { name: 'Manage Events', href: '/dashboard/manage-events', icon: BookOpen },
-        { name: 'Registrations', href: '/dashboard/registrations', icon: ClipboardList },
+        { name: 'Create Event', href: '/dashboard/create-event', icon: PlusCircle },
         { name: 'Committee Members', href: '/dashboard/committee', icon: Award },
-        { name: 'Attendance', href: '/dashboard/attendance', icon: Users },
+        { name: 'Attendance History', href: '/dashboard/attendance', icon: History },
       ];
     }
     
@@ -79,7 +86,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 
@@ -91,25 +98,25 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* Sidebar */}
       <aside 
         className={`
-          fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out
+          fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200 transform transition-transform duration-200 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:static lg:z-auto
         `}
       >
         <div className="p-4 flex items-center justify-between">
-          <div className="text-xl font-bold text-gradient">TANDEM</div>
+          <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 text-transparent bg-clip-text">CSI CONNECT</div>
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden"
           >
-            <ChevronRight className="h-5 w-5" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
         
         <div className="px-4 py-2">
-          <div className="bg-gray-50 rounded-lg p-3 flex items-center space-x-3">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 flex items-center space-x-3">
             <Avatar>
               <AvatarImage src={user?.profileUrl} />
               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -120,7 +127,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
               <p className="text-xs text-gray-500 truncate">{user?.email}</p>
             </div>
-            <Badge className="capitalize">{user?.role}</Badge>
+            <Badge className="capitalize bg-blue-100 text-blue-800 hover:bg-blue-200">{user?.role}</Badge>
           </div>
         </div>
         
@@ -131,7 +138,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <Button 
               key={link.name}
               variant="ghost"
-              className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              className="w-full justify-start text-gray-600 hover:text-blue-700 hover:bg-blue-50"
               onClick={() => {
                 navigate(link.href);
                 if (window.innerWidth < 1024) {
@@ -144,10 +151,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </Button>
           ))}
           
+          <Separator className="my-2" />
+          
           <Button 
             variant="ghost" 
             onClick={handleLogout}
-            className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50"
           >
             <LogOut className="h-5 w-5 mr-3" />
             Log out
@@ -157,7 +166,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        <header className="bg-white shadow-sm z-10">
+        <header className="bg-white shadow-sm z-10 border-b border-gray-200">
           <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center">
               <Button 
@@ -168,13 +177,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              <h1 className="text-xl font-semibold text-gray-900 ml-2 lg:ml-0">Dashboard</h1>
+              <h1 className="text-xl font-semibold text-gray-900 ml-2 lg:ml-0">{user?.role === 'student' ? 'Student Dashboard' : user?.role === 'teacher' ? 'Teacher Dashboard' : 'Committee Dashboard'}</h1>
             </div>
             
-            <div className="flex items-center">
+            <div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full"></span>
+                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+              </Button>
+              
+              <Button variant="ghost" size="icon">
+                <Settings className="h-5 w-5" />
               </Button>
             </div>
           </div>
