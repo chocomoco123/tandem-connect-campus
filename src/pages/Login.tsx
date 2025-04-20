@@ -36,12 +36,14 @@ const Login = () => {
     setLoading(true);
     
     try {
-      // Fix: Only pass email and password to login
+      // Login and get the user with their role
       await login(email, password);
       toast({
         title: "Success",
         description: "You have successfully logged in",
       });
+      
+      // Navigate to the dashboard - the role-specific redirection will happen in App.tsx with RoleBasedDashboard
       navigate('/dashboard');
     } catch (error) {
       toast({

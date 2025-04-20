@@ -11,6 +11,16 @@ const Dashboard = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // Redirect to role-specific dashboard based on user role
+  if (user.role === 'student') {
+    return <Navigate to="/dashboard/student" replace />;
+  } else if (user.role === 'teacher') {
+    return <Navigate to="/dashboard/teacher" replace />;
+  } else if (user.role === 'committee') {
+    return <Navigate to="/dashboard/committee" replace />;
+  }
+
+  // If no specific role match (unlikely to happen), show a generic dashboard
   return (
     <DashboardLayout>
       <div className="animate-fade-in">

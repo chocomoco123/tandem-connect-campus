@@ -36,6 +36,7 @@ const RoleBasedDashboard = () => {
     return <Navigate to="/login" replace />;
   }
   
+  // Properly redirect based on user role
   switch (user.role) {
     case 'student':
       return <StudentDashboard />;
