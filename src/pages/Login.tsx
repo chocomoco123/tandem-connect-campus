@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 
 const Login = () => {
@@ -36,8 +36,8 @@ const Login = () => {
     setLoading(true);
     
     try {
-      // Pass email, password and userType
-      await login(email, password, userType);
+      // Fix: Only pass email and password to login
+      await login(email, password);
       toast({
         title: "Success",
         description: "You have successfully logged in",
@@ -59,11 +59,11 @@ const Login = () => {
   };
   
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md border-0 shadow-lg rounded-2xl overflow-hidden">
-        <CardHeader className="space-y-1 text-center bg-primary text-white p-6 rounded-t-xl">
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription className="text-primary-foreground">Sign in to your CSI account</CardDescription>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md border shadow-lg rounded-2xl overflow-hidden">
+        <CardHeader className="space-y-1 text-center bg-primary/10 dark:bg-primary/5 p-6">
+          <CardTitle className="text-2xl font-bold text-primary">Welcome Back</CardTitle>
+          <CardDescription className="text-muted-foreground">Sign in to your CSI account</CardDescription>
         </CardHeader>
         
         <Tabs defaultValue="student" className="w-full" onValueChange={setUserType}>
@@ -85,19 +85,20 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="bg-white dark:bg-slate-800"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input
+                <Input 
                   id="password"
                   type={showPassword ? "text" : "password"} 
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pr-10"
+                  className="pr-10 bg-white dark:bg-slate-800"
                 />
                 <button 
                   type="button" 

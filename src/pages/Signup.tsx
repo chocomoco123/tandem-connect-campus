@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { EyeIcon, EyeOffIcon, Info } from 'lucide-react';
 
 const Signup = () => {
@@ -49,8 +49,10 @@ const Signup = () => {
     setLoading(true);
     
     try {
-      // Pass all four parameters: email, password, name, userType
-      await signup(email, password, name, userType);
+      // Fix: Pass correct parameters in the right order (email, password, name, role)
+      // The type is explicitly cast to one of the allowed role types
+      const role = userType as "student" | "teacher" | "committee";
+      await signup(email, password, name, role);
       
       toast({
         title: "Account created",
@@ -70,11 +72,11 @@ const Signup = () => {
   };
   
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md border-0 shadow-lg rounded-2xl overflow-hidden">
-        <CardHeader className="space-y-1 text-center bg-primary text-white p-6 rounded-t-xl">
-          <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
-          <CardDescription className="text-primary-foreground">Join CSI Connect today</CardDescription>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md border shadow-lg rounded-2xl overflow-hidden">
+        <CardHeader className="space-y-1 text-center bg-primary/10 dark:bg-primary/5 p-6">
+          <CardTitle className="text-2xl font-bold text-primary">Create an Account</CardTitle>
+          <CardDescription className="text-muted-foreground">Join CSI Connect today</CardDescription>
         </CardHeader>
         
         <Tabs defaultValue="student" className="w-full" onValueChange={setUserType}>
@@ -95,6 +97,7 @@ const Signup = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
                 required
+                className="bg-white dark:bg-slate-800"
               />
             </div>
             
@@ -107,6 +110,7 @@ const Signup = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
                 required
+                className="bg-white dark:bg-slate-800"
               />
             </div>
             
@@ -120,7 +124,7 @@ const Signup = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a password"
                   required
-                  className="pr-10"
+                  className="pr-10 bg-white dark:bg-slate-800"
                 />
                 <button 
                   type="button" 
@@ -142,7 +146,7 @@ const Signup = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
                   required
-                  className="pr-10"
+                  className="pr-10 bg-white dark:bg-slate-800"
                 />
                 <button 
                   type="button" 

@@ -20,6 +20,9 @@ export interface User {
   occupation?: string;
   education?: string;
   website?: string;
+  rollNumber?: string;
+  department?: string;
+  year?: string;
   socialLinks?: SocialLinks;
 }
 
@@ -27,10 +30,10 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (name: string, email: string, password: string, role: 'student' | 'teacher' | 'committee') => Promise<void>;
+  signup: (email: string, password: string, name: string, role: 'student' | 'teacher' | 'committee') => Promise<void>;
   isLoading: boolean;
   error: string | null;
-  updateUser: (userData: User) => void;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,29 +67,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Mock login - in a real app, this would be an API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Simulate user found
-      if (email === 'demo@example.com' && password === 'password') {
-        const loggedInUser: User = {
-          id: '1',
-          name: 'Demo User',
-          email: 'demo@example.com',
-          role: 'student',
-          profileUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
-        };
-        
-        setUser(loggedInUser);
-        localStorage.setItem('user', JSON.stringify(loggedInUser));
-      } else {
-        throw new Error('Invalid credentials');
-      }
+      // Generate a random role for demo purposes - in a real app, this would come from the backend
+      const roles: ('student' | 'teacher' | 'committee')[] = ['student', 'teacher', 'committee'];
+      const randomRole = roles[Math.floor(Math.random() * roles.length)];
+      
+      // Create a mock user
+      const loggedInUser: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: email.split('@')[0],
+        email: email,
+        role: randomRole,
+        profileUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+      };
+      
+      setUser(loggedInUser);
+      localStorage.setItem('user', JSON.stringify(loggedInUser));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signup = async (name: string, email: string, password: string, role: 'student' | 'teacher' | 'committee') => {
+  const signup = async (email: string, password: string, name: string, role: 'student' | 'teacher' | 'committee') => {
     setIsLoading(true);
     setError(null);
     
@@ -107,6 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem('user', JSON.stringify(newUser));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during signup');
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -128,12 +133,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
   
-  const updateUser = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     login,
     logout,

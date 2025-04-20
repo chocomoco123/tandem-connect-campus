@@ -16,6 +16,7 @@ import Contact from "./pages/Contact";
 import ProfileSettings from "./pages/ProfileSettings";
 import AppearanceSettings from "./pages/AppearanceSettings";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Import role-specific dashboard pages
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -26,17 +27,6 @@ import { useAuth } from "./contexts/AuthContext";
 
 // Create a client for React Query
 const queryClient = new QueryClient();
-
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
-  
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
-};
 
 // Role-based Route Component
 const RoleBasedDashboard = () => {
@@ -77,7 +67,7 @@ const App = () => (
                 
                 {/* Student Dashboard Routes */}
                 <Route path="/dashboard/events" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="student">
                     <EventsPage />
                   </ProtectedRoute>
                 } />
@@ -87,7 +77,7 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/my-registrations" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="student">
                     <div>My Registrations Page</div>
                   </ProtectedRoute>
                 } />
@@ -99,34 +89,34 @@ const App = () => (
                 
                 {/* Teacher Dashboard Routes */}
                 <Route path="/dashboard/registrations" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="teacher">
                     <div>Manage Registrations Page</div>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/attendance" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="teacher">
                     <div>Attendance Page</div>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/payments" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="teacher">
                     <div>Payments Page</div>
                   </ProtectedRoute>
                 } />
                 
                 {/* Committee Dashboard Routes */}
                 <Route path="/dashboard/create-event" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="committee">
                     <div>Create Event Page</div>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/committee" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="committee">
                     <div>Committee Members Page</div>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/attendance-history" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="committee">
                     <div>Attendance History Page</div>
                   </ProtectedRoute>
                 } />
@@ -134,7 +124,7 @@ const App = () => (
                 {/* Common Dashboard Routes */}
                 <Route path="/dashboard/profile" element={
                   <ProtectedRoute>
-                    <div>Profile Page</div>
+                    <ProfileSettings />
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/settings" element={
