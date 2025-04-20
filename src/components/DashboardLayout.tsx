@@ -28,7 +28,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile'; // Fixed import
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -48,6 +49,7 @@ const DashboardLayout = ({ children, title = "Dashboard" }: DashboardLayoutProps
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile(); // Fixed usage
   
   // Get navigation links based on user role
   const getNavLinks = (): NavLink[] => {

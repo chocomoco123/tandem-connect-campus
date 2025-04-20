@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Navbar from "./components/Navbar";
@@ -12,14 +12,51 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SelectRole from "./pages/SelectRole";
 import Events from "./pages/Events";
-import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact";
 import ProfileSettings from "./pages/ProfileSettings";
 import AppearanceSettings from "./pages/AppearanceSettings";
 import NotFound from "./pages/NotFound";
 
+// Import role-specific dashboard pages
+import StudentDashboard from "./pages/student/StudentDashboard";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import CommitteeDashboard from "./pages/committee/CommitteeDashboard";
+import EventsPage from "./pages/student/EventsPage";
+import { useAuth } from "./contexts/AuthContext";
+
 // Create a client for React Query
 const queryClient = new QueryClient();
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
+
+// Role-based Route Component
+const RoleBasedDashboard = () => {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  switch (user.role) {
+    case 'student':
+      return <StudentDashboard />;
+    case 'teacher':
+      return <TeacherDashboard />;
+    case 'committee':
+      return <CommitteeDashboard />;
+    default:
+      return <Navigate to="/select-role" replace />;
+  }
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -32,19 +69,79 @@ const App = () => (
             <div className="flex flex-col min-h-screen">
               <Routes>
                 {/* Dashboard routes don't include the main navbar */}
-                <Route path="/dashboard/*" element={<Dashboard />} />
-                <Route path="/dashboard/profile" element={<Dashboard />} />
-                <Route path="/dashboard/events" element={<Dashboard />} />
-                <Route path="/dashboard/notifications" element={<Dashboard />} />
-                <Route path="/dashboard/my-registrations" element={<Dashboard />} />
-                <Route path="/dashboard/calendar" element={<Dashboard />} />
-                <Route path="/dashboard/registrations" element={<Dashboard />} />
-                <Route path="/dashboard/attendance" element={<Dashboard />} />
-                <Route path="/dashboard/payments" element={<Dashboard />} />
-                <Route path="/dashboard/create-event" element={<Dashboard />} />
-                <Route path="/dashboard/committee" element={<Dashboard />} />
-                <Route path="/dashboard/attendance-history" element={<Dashboard />} />
-                <Route path="/dashboard/settings" element={<Dashboard />} />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <RoleBasedDashboard />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Student Dashboard Routes */}
+                <Route path="/dashboard/events" element={
+                  <ProtectedRoute>
+                    <EventsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/notifications" element={
+                  <ProtectedRoute>
+                    <div>Notifications Page</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/my-registrations" element={
+                  <ProtectedRoute>
+                    <div>My Registrations Page</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/calendar" element={
+                  <ProtectedRoute>
+                    <div>Calendar Page</div>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Teacher Dashboard Routes */}
+                <Route path="/dashboard/registrations" element={
+                  <ProtectedRoute>
+                    <div>Manage Registrations Page</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/attendance" element={
+                  <ProtectedRoute>
+                    <div>Attendance Page</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/payments" element={
+                  <ProtectedRoute>
+                    <div>Payments Page</div>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Committee Dashboard Routes */}
+                <Route path="/dashboard/create-event" element={
+                  <ProtectedRoute>
+                    <div>Create Event Page</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/committee" element={
+                  <ProtectedRoute>
+                    <div>Committee Members Page</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/attendance-history" element={
+                  <ProtectedRoute>
+                    <div>Attendance History Page</div>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Common Dashboard Routes */}
+                <Route path="/dashboard/profile" element={
+                  <ProtectedRoute>
+                    <div>Profile Page</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/settings" element={
+                  <ProtectedRoute>
+                    <div>Settings Page</div>
+                  </ProtectedRoute>
+                } />
                 
                 {/* Routes with the main navbar */}
                 <Route 
