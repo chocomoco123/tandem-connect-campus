@@ -1,5 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface SocialLinks {
   github?: string;
@@ -50,13 +52,69 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for saved user in localStorage
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          try {
+            // Get user profile data
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profile) {
+              setUser({
+                id: session.user.id,
+                email: session.user.email!,
+                name: profile.full_name,
+                role: profile.role,
+                department: profile.department
+              });
+            }
+
+            // Log session start
+            await supabase.rpc('start_session', {
+              device_info: navigator.userAgent
+            });
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    // Check current session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile) {
+              setUser({
+                id: session.user.id,
+                email: session.user.email!,
+                name: profile.full_name,
+                role: profile.role,
+                department: profile.department
+              });
+            }
+          });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -64,26 +122,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setError(null);
     
     try {
-      // Mock login - in a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Generate a random role for demo purposes - in a real app, this would come from the backend
-      const roles: ('student' | 'teacher' | 'committee')[] = ['student', 'teacher', 'committee'];
-      const randomRole = roles[Math.floor(Math.random() * roles.length)];
-      
-      // Create a mock user
-      const loggedInUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: email.split('@')[0],
-        email: email,
-        role: randomRole,
-        profileUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-      };
-      
-      setUser(loggedInUser);
-      localStorage.setItem('user', JSON.stringify(loggedInUser));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      // Log the login activity
+      await supabase.rpc('log_activity', {
+        action: 'user.login',
+        details: { email }
+      });
+
+      toast({
+        title: "Success",
+        description: "You have successfully logged in",
+      });
+
+      // Navigate based on user role
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profile?.role) {
+          navigate('/dashboard');
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : 'An error occurred during login',
+        variant: "destructive",
+      });
       throw err;
     } finally {
       setIsLoading(false);
@@ -95,22 +170,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setError(null);
     
     try {
-      // Mock signup - in a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create new user
-      const newUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        name,
+      const { data, error } = await supabase.auth.signUp({
         email,
-        role,
-        profileUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-      };
-      
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
+        password,
+        options: {
+          data: {
+            full_name: name,
+            role: role
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // Log the signup activity
+      await supabase.rpc('log_activity', {
+        action: 'user.signup',
+        details: { email, role }
+      });
+
+      toast({
+        title: "Success",
+        description: "Your account has been created successfully!",
+      });
+
+      if (data.user) {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during signup');
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : 'An error occurred during signup',
+        variant: "destructive",
+      });
       throw err;
     } finally {
       setIsLoading(false);
@@ -121,23 +214,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     
     try {
-      // Mock logout
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      // Log the logout activity before signing out
+      await supabase.rpc('log_activity', {
+        action: 'user.logout'
+      });
+
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
       setUser(null);
-      localStorage.removeItem('user');
+      navigate('/login');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during logout');
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : 'An error occurred during logout',
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
   
-  const updateUser = (userData: Partial<User>) => {
+  const updateUser = async (userData: Partial<User>) => {
     if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: userData.name,
+            department: userData.department,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+
+        const updatedUser = { ...user, ...userData };
+        setUser(updatedUser);
+
+        // Log the profile update activity
+        await supabase.rpc('log_activity', {
+          action: 'user.profile_update',
+          details: userData
+        });
+
+        toast({
+          title: "Success",
+          description: "Profile updated successfully!",
+        });
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: err instanceof Error ? err.message : 'Failed to update profile',
+          variant: "destructive",
+        });
+      }
     }
   };
 
