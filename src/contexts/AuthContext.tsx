@@ -253,10 +253,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const updatedUser = { ...user, ...userData };
         setUser(updatedUser);
 
-        // Log the profile update activity
+        // Log the profile update activity with properly typed details
         await supabase.rpc('log_activity', {
           action: 'user.profile_update',
-          details: userData
+          details: {
+            name: userData.name,
+            department: userData.department
+          }
         });
 
         toast({
