@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -67,12 +66,11 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Start with loading true
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Initialize auth state and listen for changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -111,7 +109,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     try {
       const { data: profile, error } = await supabase
-        .from<ProfileRow>('profiles')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
@@ -153,7 +151,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -189,7 +187,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signup = async (email: string, password: string, name: string, role: 'student' | 'teacher' | 'committee') => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -218,7 +216,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (logError) {
           console.error('Failed to log activity:', logError);
         }
-        
+
         navigate('/dashboard');
       }
     } catch (err: any) {
@@ -236,7 +234,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     setIsLoading(true);
-    
+
     try {
       await supabase.rpc('log_activity', {
         action: 'user.logout'
@@ -258,7 +256,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(false);
     }
   };
-  
+
   const updateUser = async (userData: Partial<User>) => {
     if (user) {
       try {
