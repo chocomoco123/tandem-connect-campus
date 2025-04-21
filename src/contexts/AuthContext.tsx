@@ -29,6 +29,22 @@ export interface User {
   socialLinks?: SocialLinks;
 }
 
+interface ProfileRow {
+  id: string;
+  full_name: string | null;
+  role: 'student' | 'teacher' | 'committee';
+  avatar_url?: string | null;
+  phone?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  education?: string | null;
+  occupation?: string | null;
+  website?: string | null;
+  roll_number?: string | null;
+  department?: string | null;
+  year?: string | null;
+}
+
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
@@ -58,11 +74,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Initialize auth state and listen for changes
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user) {
-          // Using setTimeout to avoid potential Supabase auth deadlocks
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
@@ -73,7 +87,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // THEN check for existing session
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -98,35 +111,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     try {
       const { data: profile, error } = await supabase
-        .from('profiles')
+        .from<ProfileRow>('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw error;
       }
-
-      if (profile) {
-        const { data: userData } = await supabase.auth.getUser();
-        
-        setUser({
-          id: userId,
-          email: userData.user?.email || '',
-          name: profile.full_name || '',
-          role: profile.role,
-          profileUrl: profile.avatar_url,
-          department: profile.department,
-          phone: profile.phone,
-          bio: profile.bio,
-          location: profile.location,
-          education: profile.education,
-          occupation: profile.occupation,
-          website: profile.website,
-          rollNumber: profile.roll_number,
-          year: profile.year
-        });
+      if (!profile) {
+        setUser(null);
+        setIsLoading(false);
+        return;
       }
+
+      const { data: userData } = await supabase.auth.getUser();
+
+      setUser({
+        id: userId,
+        email: userData.user?.email || '',
+        name: profile.full_name || '',
+        role: profile.role,
+        profileUrl: profile.avatar_url || undefined,
+        department: profile.department || undefined,
+        phone: profile.phone || undefined,
+        bio: profile.bio || undefined,
+        location: profile.location || undefined,
+        education: profile.education || undefined,
+        occupation: profile.occupation || undefined,
+        website: profile.website || undefined,
+        rollNumber: profile.roll_number || undefined,
+        year: profile.year || undefined,
+      });
     } catch (error) {
       console.error('Error fetching user profile:', error);
     } finally {
@@ -146,7 +162,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
 
-      // Log the login activity
       await supabase.rpc('log_activity', {
         action: 'user.login',
         details: { email }
@@ -194,7 +209,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Your account has been created successfully!",
       });
 
-      // Log the signup activity - only if successful
       if (data.user) {
         try {
           await supabase.rpc('log_activity', {
@@ -224,7 +238,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     
     try {
-      // Log the logout activity before signing out
       await supabase.rpc('log_activity', {
         action: 'user.logout'
       });
@@ -273,7 +286,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const updatedUser = { ...user, ...userData };
         setUser(updatedUser);
 
-        // Log the profile update activity
         await supabase.rpc('log_activity', {
           action: 'user.profile_update',
           details: updates

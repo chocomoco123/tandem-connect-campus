@@ -175,28 +175,55 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string
           department: string | null
+          education: string | null
           full_name: string | null
           id: string
+          location: string | null
+          occupation: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["user_role"]
+          roll_number: string | null
           updated_at: string
+          website: string | null
+          year: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           department?: string | null
+          education?: string | null
           full_name?: string | null
           id: string
+          location?: string | null
+          occupation?: string | null
+          phone?: string | null
           role: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
           updated_at?: string
+          website?: string | null
+          year?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           department?: string | null
+          education?: string | null
           full_name?: string | null
           id?: string
+          location?: string | null
+          occupation?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
           updated_at?: string
+          website?: string | null
+          year?: string | null
         }
         Relationships: []
       }
