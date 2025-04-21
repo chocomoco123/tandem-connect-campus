@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -50,72 +51,88 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Initialize auth state and listen for changes
   useEffect(() => {
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (session?.user) {
-          try {
-            // Get user profile data
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-
-            if (profile) {
-              setUser({
-                id: session.user.id,
-                email: session.user.email!,
-                name: profile.full_name,
-                role: profile.role,
-                department: profile.department
-              });
-            }
-
-            // Log session start
-            await supabase.rpc('start_session', {
-              device_info: navigator.userAgent
-            });
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-          }
+          // Using setTimeout to avoid potential Supabase auth deadlocks
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
         } else {
           setUser(null);
+          setIsLoading(false);
         }
       }
     );
 
-    // Check current session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (profile) {
-              setUser({
-                id: session.user.id,
-                email: session.user.email!,
-                name: profile.full_name,
-                role: profile.role,
-                department: profile.department
-              });
-            }
-          });
+    // THEN check for existing session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking auth session:', error);
+        setIsLoading(false);
       }
-    });
+    };
+
+    initializeAuth();
 
     return () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (profile) {
+        const { data: userData } = await supabase.auth.getUser();
+        
+        setUser({
+          id: userId,
+          email: userData.user?.email || '',
+          name: profile.full_name || '',
+          role: profile.role,
+          profileUrl: profile.avatar_url,
+          department: profile.department,
+          phone: profile.phone,
+          bio: profile.bio,
+          location: profile.location,
+          education: profile.education,
+          occupation: profile.occupation,
+          website: profile.website,
+          rollNumber: profile.roll_number,
+          year: profile.year
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -140,19 +157,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "You have successfully logged in",
       });
 
-      // Navigate based on user role
-      if (data.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profile?.role) {
-          navigate('/dashboard');
-        }
-      }
-    } catch (err) {
+      navigate('/dashboard');
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
       toast({
         title: "Error",
@@ -183,21 +189,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
 
-      // Log the signup activity
-      await supabase.rpc('log_activity', {
-        action: 'user.signup',
-        details: { email, role }
-      });
-
       toast({
         title: "Success",
         description: "Your account has been created successfully!",
       });
 
+      // Log the signup activity - only if successful
       if (data.user) {
+        try {
+          await supabase.rpc('log_activity', {
+            action: 'user.signup',
+            details: { email, role }
+          });
+        } catch (logError) {
+          console.error('Failed to log activity:', logError);
+        }
+        
         navigate('/dashboard');
       }
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'An error occurred during signup');
       toast({
         title: "Error",
@@ -224,7 +234,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setUser(null);
       navigate('/login');
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'An error occurred during logout');
       toast({
         title: "Error",
@@ -239,13 +249,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const updateUser = async (userData: Partial<User>) => {
     if (user) {
       try {
+        const updates = {
+          ...(userData.name && { full_name: userData.name }),
+          ...(userData.department && { department: userData.department }),
+          ...(userData.phone && { phone: userData.phone }),
+          ...(userData.bio && { bio: userData.bio }),
+          ...(userData.location && { location: userData.location }),
+          ...(userData.education && { education: userData.education }),
+          ...(userData.occupation && { occupation: userData.occupation }),
+          ...(userData.website && { website: userData.website }),
+          ...(userData.rollNumber && { roll_number: userData.rollNumber }),
+          ...(userData.year && { year: userData.year }),
+          updated_at: new Date().toISOString()
+        };
+
         const { error } = await supabase
           .from('profiles')
-          .update({
-            full_name: userData.name,
-            department: userData.department,
-            updated_at: new Date().toISOString()
-          })
+          .update(updates)
           .eq('id', user.id);
 
         if (error) throw error;
@@ -253,20 +273,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const updatedUser = { ...user, ...userData };
         setUser(updatedUser);
 
-        // Log the profile update activity with properly typed details
+        // Log the profile update activity
         await supabase.rpc('log_activity', {
           action: 'user.profile_update',
-          details: {
-            name: userData.name,
-            department: userData.department
-          }
+          details: updates
         });
 
         toast({
           title: "Success",
           description: "Profile updated successfully!",
         });
-      } catch (err) {
+      } catch (err: any) {
         toast({
           title: "Error",
           description: err instanceof Error ? err.message : 'Failed to update profile',
