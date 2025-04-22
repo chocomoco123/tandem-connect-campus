@@ -7,21 +7,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const Login = () => {
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('student');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -33,10 +33,24 @@ const Login = () => {
       return;
     }
     
+    setLoading(true);
+    
     try {
-      await login(email, password);
+      // Pass email, password and userType
+      await login(email, password, userType);
+      toast({
+        title: "Success",
+        description: "You have successfully logged in",
+      });
+      navigate('/dashboard');
     } catch (error) {
-      console.error("Login error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to log in",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,125 +58,76 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
   
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        duration: 0.6,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
-  };
-  
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 py-12 px-4 sm:px-6 lg:px-8">
-      <motion.div 
-        className="w-full max-w-md"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <Card className="border shadow-lg rounded-2xl overflow-hidden">
-          <motion.div variants={itemVariants}>
-            <CardHeader className="space-y-1 text-center bg-primary/10 dark:bg-primary/5 p-6">
-              <CardTitle className="text-2xl font-bold text-primary">Welcome Back</CardTitle>
-              <CardDescription className="text-muted-foreground">Sign in to your CSI account</CardDescription>
-            </CardHeader>
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <Tabs defaultValue="student" className="w-full" onValueChange={setUserType}>
-              <TabsList className="grid grid-cols-3 w-full">
-                <TabsTrigger value="student">Student</TabsTrigger>
-                <TabsTrigger value="teacher">Teacher</TabsTrigger>
-                <TabsTrigger value="committee">Committee</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </motion.div>
-          
-          <CardContent className="p-6">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <motion.div variants={itemVariants} className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email"
-                  type="email" 
-                  placeholder="your.email@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md border-0 shadow-lg rounded-2xl overflow-hidden">
+        <CardHeader className="space-y-1 text-center bg-primary text-white p-6 rounded-t-xl">
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardDescription className="text-primary-foreground">Sign in to your CSI account</CardDescription>
+        </CardHeader>
+        
+        <Tabs defaultValue="student" className="w-full" onValueChange={setUserType}>
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="student">Student</TabsTrigger>
+            <TabsTrigger value="teacher">Teacher</TabsTrigger>
+            <TabsTrigger value="committee">Committee</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        <CardContent className="p-6">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email"
+                type="email" 
+                placeholder="your.email@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white dark:bg-slate-800"
+                  className="pr-10"
                 />
-              </motion.div>
-              
-              <motion.div variants={itemVariants} className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input 
-                    id="password"
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="pr-10 bg-white dark:bg-slate-800"
-                  />
-                  <button 
-                    type="button" 
-                    onClick={togglePasswordVisibility} 
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                    aria-label={showPassword ? "Hide Password" : "Show Password"}
-                  >
-                    {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
-                  </button>
-                </div>
-                <div className="text-right text-sm">
-                  <Link to="/forgot-password" className="text-primary hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
-              </motion.div>
-              
-              <motion.div variants={itemVariants}>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 transition-all"
-                  disabled={isLoading}
+                <button 
+                  type="button" 
+                  onClick={togglePasswordVisibility} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
                 >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Signing in...
-                    </div>
-                  ) : "Sign In"}
-                </Button>
-              </motion.div>
-            </form>
-          </CardContent>
-          
-          <motion.div variants={itemVariants}>
-            <CardFooter className="flex flex-col space-y-4 border-t p-6 bg-muted/30">
-              <div className="text-center text-sm">
-                Don't have an account yet?{" "}
-                <Link to="/signup" className="text-primary font-medium hover:underline">
-                  Create an account
+                  {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                </button>
+              </div>
+              <div className="text-right text-sm">
+                <Link to="/forgot-password" className="text-primary hover:underline">
+                  Forgot password?
                 </Link>
               </div>
-            </CardFooter>
-          </motion.div>
-        </Card>
-      </motion.div>
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+        </CardContent>
+        
+        <CardFooter className="flex flex-col space-y-4 border-t p-6 bg-muted/30">
+          <div className="text-center text-sm">
+            Don't have an account yet?{" "}
+            <Link to="/signup" className="text-primary font-medium hover:underline">
+              Create an account
+            </Link>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
